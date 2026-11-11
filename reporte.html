@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.dataset.tema = (function () { try { return localStorage.getItem("as_tema") === "noche" ? "noche" : "dia"; } catch (e) { return "dia"; } })();</script>
+  <title>Reportar un incidente - Alerta Sicaya</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#14532d">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Alerta Sicaya">
+</head>
+<body class="min-h-screen" data-temable="si">
+
+  <header class="bg-[var(--verde)] text-white border-b-4 border-[var(--maiz)] px-5 py-3 flex items-center gap-3">
+    <img src="img/logo-sicaya.png" alt="" class="h-11 w-auto rounded" onerror="this.style.display='none'">
+    <div class="mr-auto">
+      <h1 class="titulo text-lg font-extrabold leading-tight">Reportar un incidente</h1>
+      <p id="vecino" class="text-sm text-green-100"></p>
+    </div>
+    <a id="ir-comunidad" href="comunidad.html" class="rounded-lg bg-[var(--maiz)] px-3 py-1.5 text-sm font-semibold text-[var(--suelo)]" hidden>Alertas de la red</a>
+    <button id="salir" class="rounded-lg border border-green-200/60 px-3 py-1.5 text-sm font-semibold hover:bg-white/10">Salir</button>
+  </header>
+
+  <main class="mx-auto max-w-md px-4 py-5">
+
+    <!-- Ubicación en vivo (visible mientras se comparte) -->
+    <div id="vivo-panel" class="mb-4 flex flex-col gap-2 rounded-lg border-2 border-[var(--verde)] bg-white p-3" hidden>
+      <p id="vivo-estado" class="text-sm font-semibold text-green-900"></p>
+      <button type="button" id="vivo-parar" class="self-start rounded-lg border-2 border-[var(--rojo)] px-4 py-2 text-sm font-semibold text-[var(--rojo)]">Dejar de compartir mi ubicación</button>
+    </div>
+
+    <div id="progreso" class="mb-4">
+      <p id="paso-texto" class="text-sm font-semibold text-slate-700">Paso 1 de 3</p>
+      <div class="mt-1 h-2 w-full rounded-full bg-slate-200">
+        <div id="barra" class="h-2 rounded-full bg-[var(--verde)]" style="width: 33%; transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <form id="form" class="flex flex-col gap-5">
+
+      <p class="rounded-lg border-2 border-[#cbd5c8] bg-white p-3 text-sm">
+        Si hay peligro ahora, llama al <a href="tel:105" class="font-bold text-[var(--rojo)] underline">105</a>.
+      </p>
+
+      <!-- PASO 1: qué pasa -->
+      <section id="paso-1" class="flex flex-col gap-3">
+        <h2 class="titulo text-2xl font-extrabold">¿Qué está pasando?</h2>
+        <div id="grupos" class="grid grid-cols-2 gap-3"></div>
+        <div id="tipos" class="flex flex-col gap-3" hidden>
+          <button type="button" id="volver-grupos" class="self-start rounded-lg border-2 border-[var(--verde)] px-4 py-2 font-semibold text-[var(--verde)]">← Cambiar de grupo</button>
+          <p id="grupo-titulo" class="titulo text-lg font-bold"></p>
+          <div id="lista-tipos" class="flex flex-col gap-3"></div>
+        </div>
+        <p id="catalogo-error" class="rounded-lg bg-red-100 p-3 text-sm font-medium text-red-900" hidden></p>
+      </section>
+
+      <!-- PASO 2: dónde ocurre -->
+      <section id="paso-2" class="flex flex-col gap-3" hidden>
+        <h2 class="titulo text-2xl font-extrabold">¿Dónde ocurre?</h2>
+        <p id="ubicacion" class="text-base">Buscando tu ubicación...</p>
+        <div id="mapa-reporte" class="relative z-0 h-72 w-full overflow-hidden rounded-xl border-2 border-[#cbd5c8]"></div>
+        <button type="button" id="reubicar" class="rounded-xl border-2 border-[var(--verde)] bg-white py-3 text-base font-semibold text-[var(--verde)]">Estoy aquí: buscar mi ubicación otra vez</button>
+        <p class="text-sm text-slate-600">Si ocurre en otro lugar, toca el mapa donde es.</p>
+      </section>
+
+      <!-- PASO 3: lo único que falta para enviar -->
+      <section id="paso-3" class="flex flex-col gap-4" hidden>
+        <h2 class="titulo text-2xl font-extrabold">Último paso</h2>
+        <div id="resumen" class="rounded-xl p-4 text-lg font-bold"></div>
+
+        <fieldset class="flex flex-col gap-2">
+          <legend class="titulo mb-1 text-lg font-bold">¿Hay alguien herido o en peligro ahora?</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="peligro-si" class="rounded-xl border-2 py-4 text-xl font-bold">Sí</button>
+            <button type="button" id="peligro-no" class="rounded-xl border-2 py-4 text-xl font-bold">No</button>
+          </div>
+        </fieldset>
+
+        <label class="flex items-start gap-3 rounded-xl border-2 border-[#cbd5c8] bg-white p-3">
+          <input id="en-vivo" type="checkbox" checked class="mt-1 h-6 w-6 accent-[var(--verde)]">
+          <span class="flex flex-col">
+            <span class="font-semibold">Compartir mi ubicación en vivo hasta que se resuelva</span>
+            <span class="text-xs text-slate-600">Puedes dejar de compartir cuando quieras.</span>
+          </span>
+        </label>
+      </section>
+
+      <div id="aviso" role="alert" class="rounded-lg bg-red-100 px-4 py-3 text-sm font-medium text-red-900" hidden></div>
+
+      <div class="flex gap-3">
+        <button type="button" id="atras" style="flex: 1 1 0;" class="rounded-xl border-2 border-[var(--verde)] bg-white py-3 text-lg font-semibold text-[var(--verde)]" hidden>Atrás</button>
+        <button type="button" id="siguiente" style="flex: 1 1 0;" class="rounded-xl bg-[var(--verde)] py-3 text-lg font-bold text-white" hidden>Siguiente</button>
+        <button type="submit" id="enviar" style="flex: 1 1 0;" class="titulo rounded-xl bg-[var(--rojo)] py-4 text-xl font-extrabold text-white hover:brightness-110 disabled:opacity-60" hidden>Enviar reporte</button>
+      </div>
+    </form>
+
+    <!-- DESPUÉS DE ENVIAR: foto (opcional) -->
+    <section id="extra-foto" class="flex flex-col items-center gap-4 text-center" hidden>
+      <div class="marca-ok">✔</div>
+      <h2 class="titulo text-2xl font-extrabold text-[var(--verde)]">¡Reporte enviado!</h2>
+      <p class="text-base">Ya llegó al serenazgo. Si es seguro, puedes ayudarnos con una foto.</p>
+      <input id="foto" type="file" accept="image/*" capture="environment" class="sr-only">
+      <label id="tomar-foto" for="foto" class="w-full cursor-pointer rounded-xl border-2 border-dashed border-[var(--verde)] bg-white py-5 text-lg font-semibold text-[var(--verde)]">Tomar foto</label>
+      <img id="vista" alt="Vista previa de la foto" class="max-h-64 rounded-lg object-cover" hidden>
+      <p id="foto-aviso" role="alert" class="w-full rounded-lg bg-red-100 px-4 py-3 text-sm font-medium text-red-900" hidden></p>
+      <button type="button" id="foto-enviar" class="w-full rounded-xl bg-[var(--verde)] py-4 text-lg font-bold text-white disabled:opacity-60" hidden>Enviar esta foto</button>
+      <button type="button" id="foto-omitir" class="w-full rounded-xl border-2 border-[#cbd5c8] bg-white py-3 text-base font-semibold">Omitir</button>
+    </section>
+
+    <!-- DESPUÉS DE ENVIAR: descripción (opcional) -->
+    <section id="extra-texto" class="flex flex-col gap-4" hidden>
+      <h2 class="titulo text-2xl font-extrabold">¿Quieres contarnos algo más?</h2>
+      <textarea id="texto" rows="4" maxlength="200" class="campo" placeholder="Qué ves y cómo es el lugar"></textarea>
+      <p class="text-sm text-slate-600">No escribas nombres de menores.</p>
+      <p id="texto-aviso" role="alert" class="rounded-lg bg-red-100 px-4 py-3 text-sm font-medium text-red-900" hidden></p>
+      <button type="button" id="texto-enviar" class="rounded-xl bg-[var(--verde)] py-4 text-lg font-bold text-white disabled:opacity-60">Enviar</button>
+      <button type="button" id="texto-omitir" class="rounded-xl border-2 border-[#cbd5c8] bg-white py-3 text-base font-semibold">Omitir</button>
+    </section>
+
+    <!-- FINAL -->
+    <section id="exito" class="flex flex-col items-center gap-4 text-center" hidden>
+      <div class="marca-ok">✔</div>
+      <h2 class="titulo text-2xl font-extrabold text-[var(--verde)]">Gracias</h2>
+      <p id="exito-detalle" class="text-base"></p>
+      <p class="text-sm text-slate-600">No necesitas cerrar sesión: la próxima vez entrarás directo.</p>
+      <button type="button" id="otro" class="w-full rounded-xl bg-[var(--verde)] py-4 text-lg font-bold text-white">Enviar otro reporte</button>
+    </section>
+
+  </main>
+
+  <script>
+    // Aviso si la pantalla no termina de cargar (archivo faltante, error o sin conexión)
+    (function () {
+      var detalle = "";
+      window.addEventListener("error", function (e) { detalle = e.message || detalle; });
+      window.addEventListener("unhandledrejection", function (e) { detalle = (e.reason && e.reason.message) || detalle; });
+      setTimeout(function () {
+        var nombre = document.getElementById("vecino");
+        if (nombre && nombre.textContent) return; // cargó bien
+        var caja = document.getElementById("catalogo-error");
+        caja.textContent = "La pantalla no terminó de cargar. Pulsa Ctrl + F5 para actualizar. " +
+          "Si sigue igual, avisa al administrador. Detalle: " + (detalle || "sin detalle (puede ser falta de conexión)");
+        caja.hidden = false;
+      }, 8000);
+    })();
+  </script>
+  <script type="module" src="js/reporte.js"></script>
+  <script type="module" src="js/pwa.js"></script>
+</body>
+</html>

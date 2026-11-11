@@ -1,0 +1,121 @@
+/* Alerta Sicaya - tokens de diseño
+   Verde = identidad y "resuelto" | Maíz = acento y "en proceso" | Rojo = SOLO emergencias */
+:root {
+  --verde: #14532d;
+  --verde-vivo: #22c55e;
+  --maiz: #facc15;
+  --rojo: #dc2626;
+  --suelo: #0b1710;   /* fondo del panel oscuro */
+  --papel: #f5f7f2;   /* fondo de páginas del vecino */
+  --texto: #12201a;
+}
+
+body {
+  font-family: "Figtree", system-ui, sans-serif;
+  background: var(--papel);
+  color: var(--texto);
+}
+
+.titulo { font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif; }
+
+.campo {
+  width: 100%;
+  border: 2px solid #cbd5c8;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  background: #fff;
+  font-size: 1rem;
+}
+.campo:focus { border-color: var(--verde); }
+
+:focus-visible { outline: 3px solid var(--maiz); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Portada */
+.nav-solido { background: rgba(11, 23, 16, 0.95); backdrop-filter: blur(8px); }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } }
+
+/* Entrada de la tarjeta del login (solo CSS, no depende de JavaScript) */
+@keyframes entrada { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.entrada { animation: entrada 0.6s ease both; }
+
+/* Que el atributo "hidden" siempre oculte, aunque el elemento tenga clases como "flex" */
+[hidden] { display: none !important; }
+
+/* Mascota del login: flota suavemente y se inclina con el mouse */
+@keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.flotar { animation: flotar 4s ease-in-out infinite; }
+#mascota-img { transition: transform 0.15s ease-out; will-change: transform; }
+
+/* Aviso para instalar la app */
+.banner-instalar {
+  position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 3000; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  max-width: 34rem; margin: 0 auto; padding: 14px 16px; border-radius: 14px;
+  background: #14532d; color: #fff; border: 2px solid #facc15;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); font-size: 0.95rem;
+}
+.banner-instalar p { flex: 1 1 200px; margin: 0; }
+.banner-instalar button { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+.banner-instalar .principal { background: #facc15; color: #12201a; }
+.banner-instalar .secundario { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, 0.5); }
+
+/* Pin del lugar del incidente (pantalla de reporte) */
+.pin-reporte {
+  width: 28px; height: 28px; background: #dc2626; border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Cambio de pantalla en el reporte y marca de "enviado" */
+@keyframes entra { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+.pantalla { animation: entra 0.25s ease-out both; }
+@keyframes aparecer { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.marca-ok {
+  width: 72px; height: 72px; border-radius: 9999px; background: #16a34a; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 40px;
+  animation: aparecer 0.4s ease-out both;
+}
+
+/* Botón pequeño para instalar la app (siempre disponible en la esquina) */
+.chip-instalar {
+  position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 3000;
+  border: 0; border-radius: 9999px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600;
+  background: #facc15; color: #12201a; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); cursor: pointer;
+}
+body.con-chip-instalar { padding-bottom: 4.5rem; }
+body.con-chip-instalar .banner-instalar { bottom: calc(72px + env(safe-area-inset-bottom)); }
+
+/* Modo día / modo noche (solo en las pantallas con data-temable="si") */
+:root { --tarjeta-boton: #ffffff; --texto-boton: #12201a; }
+html[data-tema="noche"] { --tarjeta-boton: #13241b; --texto-boton: #e8f1ea; color-scheme: dark; }
+
+.boton-tema {
+  position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 3000;
+  border: 2px solid #cbd5c8; border-radius: 9999px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600;
+  background: #ffffff; color: #12201a; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); cursor: pointer;
+}
+body[data-temable] { padding-bottom: 4.5rem; }
+html[data-tema="noche"] .boton-tema { background: #13241b; color: #e8f1ea; border-color: #1f3a2b; }
+
+html[data-tema="noche"] body[data-temable] { background: #0b1710; color: #e8f1ea; }
+html[data-tema="noche"] body[data-temable] .bg-white { background-color: #13241b !important; }
+html[data-tema="noche"] body[data-temable] .border-\[\#cbd5c8\] { border-color: #1f3a2b !important; }
+html[data-tema="noche"] body[data-temable] .text-slate-700,
+html[data-tema="noche"] body[data-temable] .text-slate-600 { color: #b6c9bb !important; }
+html[data-tema="noche"] body[data-temable] .bg-slate-200 { background-color: #1f3a2b !important; }
+html[data-tema="noche"] body[data-temable] .text-\[var\(--verde\)\] { color: #86efac !important; }
+html[data-tema="noche"] body[data-temable] .border-\[var\(--verde\)\] { border-color: #4ade80 !important; }
+html[data-tema="noche"] body[data-temable] .text-green-900 { color: #bbf7d0 !important; }
+html[data-tema="noche"] body[data-temable] .bg-red-100 { background-color: #3b1414 !important; }
+html[data-tema="noche"] body[data-temable] .text-red-900 { color: #fecaca !important; }
+html[data-tema="noche"] body[data-temable] .campo { background: #0f1d15; color: #e8f1ea; border-color: #1f3a2b; }
+html[data-tema="noche"] body[data-temable] .leaflet-tile { filter: brightness(0.7) contrast(1.1) saturate(0.8); }
+/* Las zonas que ya son oscuras (menú y portada) no se tocan */
+html[data-tema="noche"] body[data-temable] .zona-oscura .bg-white { background-color: #ffffff !important; }
+html[data-tema="noche"] body[data-temable] .zona-oscura .text-\[var\(--verde\)\] { color: #14532d !important; }

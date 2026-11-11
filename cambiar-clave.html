@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.dataset.tema = (function () { try { return localStorage.getItem("as_tema") === "noche" ? "noche" : "dia"; } catch (e) { return "dia"; } })();</script>
+  <title>Crear contraseña nueva - Alerta Sicaya</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#14532d">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+</head>
+<body class="min-h-screen" data-temable="si">
+
+  <header class="flex items-center gap-3 border-b-4 border-[var(--maiz)] bg-[var(--verde)] px-5 py-3 text-white">
+    <img src="img/logo-sicaya.png" alt="" class="h-11 w-auto rounded" onerror="this.style.display='none'">
+    <h1 class="titulo text-lg font-extrabold leading-tight">Alerta Sicaya</h1>
+  </header>
+
+  <main class="mx-auto max-w-md px-5 py-8">
+    <h2 class="titulo text-3xl font-extrabold">Crea tu contraseña nueva</h2>
+    <p id="saludo" class="mt-2 text-lg"></p>
+    <p class="mt-1 text-slate-700">Elige una contraseña que recuerdes y que solo tú sepas. Debe tener al menos 8 letras o números.</p>
+
+    <form id="form" class="mt-6 flex flex-col gap-4">
+      <label class="flex flex-col gap-1 font-medium">Contraseña nueva
+        <input id="nueva" type="password" minlength="8" required autocomplete="new-password" class="campo">
+      </label>
+      <label class="flex flex-col gap-1 font-medium">Escríbela otra vez
+        <input id="repetir" type="password" minlength="8" required autocomplete="new-password" class="campo">
+      </label>
+      <label class="flex items-center gap-3 text-base">
+        <input id="mostrar" type="checkbox" class="h-6 w-6 accent-[var(--verde)]">
+        Mostrar lo que escribo
+      </label>
+      <div id="aviso" role="alert" class="rounded-lg bg-red-100 px-4 py-3 text-sm font-medium text-red-900" hidden></div>
+      <button id="guardar" type="submit" class="rounded-xl bg-[var(--verde)] py-4 text-lg font-bold text-white hover:brightness-110 disabled:opacity-60">Guardar y entrar</button>
+    </form>
+  </main>
+
+  <script type="module" src="js/cambiar-clave.js"></script>
+  <script type="module" src="js/pwa.js"></script>
+</body>
+</html>
